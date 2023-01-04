@@ -1,20 +1,16 @@
 import React from 'react';
 
-function  Hello(props){
-    return <div>안녕하세요 {props.name}</div>
+function  Hello({color,name, isSpecial}){
+    return(
+        <div style={{color}}>
+            {isSpecial && <b>*</b>}
+            안녕하세요{name}
+        </div>
+    );
 }
 
-//작업작업작업 작업 작업 작업 작업 작업
-//작업 작업 작업
-
-//작업이야 
-//작업이야 
-//작업이야 
-//작업이야 
-//작업이야 
-//작업이야 
-//작업이야 
+Hello.defaultProps = {
+    name : '이름 없음'
+}
 
 export default Hello;
-
-//change
