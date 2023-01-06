@@ -15,16 +15,13 @@ function App() {
   });
 
   const {username, email} = inputs;
-  const onChange = useCallback(
-    e => {
+  const onChange = useCallback(e => {
       const { name, value } = e.target;
-      setInputs({
+      setInputs(inputs => ({
         ...inputs,
-        [name]: value
-      });
-    },
-    [inputs]
-  );
+        [name]:value
+      }));//함수형으로 업데이트
+    },[]); // inputs을 참조하지 않게 한다.
 
   const [users,setUsers] = useState([
     {
@@ -67,16 +64,14 @@ function App() {
     nextId.current +=1;
   },[users,username,email]);
   
-  const onRemove = useCallback(
-    id => {
-      setUsers(users.filter(user => user.id !== id));
-    },
-    [users]
-  );
+  const onRemove = useCallback(id => {
+      // user.id가 파라미터로 일치하지 않는 원소를 추출해서 새로운 배열을 만듬
+      // = user.id가 id인 것을 제거함
+      setUsers(users => users.filter(user => user.id !== id));
+    },[]);
 
-  const onToggle = useCallback(
-    id => {
-      setUsers(
+  const onToggle = useCallback(id => {
+      setUsers( users =>
         users.map( user =>//map함수란 반복되는 컴포넌트를 렌더링하기 위해서 
           //자바스크립트 배열의 내장함수인 map을 활용
           user.id === id ? { ...user, active: !user.active} : user
@@ -85,8 +80,7 @@ function App() {
         )
       );
     },
-    [users]
-  );
+    []);
 
   const count = useMemo(()=> countActiveUsers(users),[users]);
   

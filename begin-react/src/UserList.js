@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 
-function User({user,onRemove,onToggle}){//User 컴포넌트에서 삭제를 할 수 있게 
+const User = React.memo(function User({user,onRemove,onToggle}){//User 컴포넌트에서 삭제를 할 수 있게 
     useEffect(()=>{
         console.log(user);
     });
@@ -23,7 +23,7 @@ function User({user,onRemove,onToggle}){//User 컴포넌트에서 삭제를 할 
             <button onClick = {() => onRemove(user.id)} >삭제</button>
         </div>
     );
-}
+});
 
 function UserList({users,onRemove,onToggle}){//User 컴포넌트에서 삭제를 할 수 있게
     return (
