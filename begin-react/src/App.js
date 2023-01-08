@@ -1,4 +1,4 @@
-import React, { useRef, useState,useMemo, useCallback } from 'react';
+import React, { useRef,useMemo, useCallback, useReducer } from 'react';
 import UserList from './UserList'
 import CreateUser from './CreateUser';
 
@@ -7,23 +7,12 @@ function countActiveUsers(users){
   return users.filter(user => user.active).length;
 }
 
-
-function App() {
-  const [inputs, setInputs] = useState({
+const initialState = {//초기상태
+  inputs : {
     username : '',
     email: ''
-  });
-
-  const {username, email} = inputs;
-  const onChange = useCallback(e => {
-      const { name, value } = e.target;
-      setInputs(inputs => ({
-        ...inputs,
-        [name]:value
-      }));//함수형으로 업데이트
-    },[]); // inputs을 참조하지 않게 한다.
-
-  const [users,setUsers] = useState([
+  },
+  users : [
     {
       id : 1,
       username: 'velopert',
@@ -42,60 +31,106 @@ function App() {
       email : 'liz@example.com',
       active : false
     }
-  ]);
+  ]
+};
 
-  const nextId = useRef(4); //useRef()를 사용할때 파라미터를 넣어주면, 이 값이 .current 값이 기본값이 됩니다.
-  //이 값을 수정할때에는 .current값을 수정하면 되고 조회를 할떄는 .current를 조회하면됩니다.
+function reducer(state, action){//새로운 상태를 만드는 로직이다.
+  switch (action.type) {//action의 타입을 확인하여서 실행
+    case 'CHAGNE_INPUT':
+      return{
+        ...state,
+        inputs: {
+          ...state.inputs,
+          [action.name]: action.value
+        }
+      };
+    case 'CREATE_USER':
+      return{
+        inputs : initialState.inputs,
+        users : state.users.concat(action.user)
+      };
+    case 'TOGGLE_USER':
+      return {
+        ...state,
+        users : state.users.map(user =>
+          user.id === action.id ? {...user, action : !user.active} : user
+          )
+      };
+    case 'REMOVE_USER':
+      return{
+        ...state,
+        users : state.users.filter(user => user.id !== action)
+      };
+    default:
+      return state;
+  }
+}
+
+function App(){
+  const [state, dispatch] = useReducer(reducer, initialState);
+  //useReducer의 활용법으로
+  //state = 우리가 앞으로 컴포넌트에서 사용 할 수 있는 상태를 가르키게 된다.
+  //dispath는 액션을 발생 시키는 함수 => dispatch{{type: 'typename'}}
+  //useReducer는 reducer와 초기상태인 initialState를 매개변수로 받는다 
+
+  const nextId = useRef(4);
+  const { users } = state;
+  const {username,email} = state.inputs;
+
+  const onChange = useCallback(e => {//useCallback을 활용해서 특정 함수를 새로 만들지 않고 재사용
+    //useCallback의 첫번째 매개변수로 어떻게 연산을 정의할지 정의하는 함수
+    const {name, value}  = e.target;
+    dispatch({
+      type: 'CHANGE_INPUT',
+      name,
+      value
+    });
+  },[]);
+  //useCallback의 두번째 매개변수로 배열 값이 바뀌게되면 우리가 등록한 함수를 호출해서 연산을 해주고
+  //배열의 값이 바뀌지 않으면 이전에 연산한 값을 재사용하게 된다.
 
   const onCreate = useCallback(() => {
-    const user = {
-      id : nextId.current,
-      username,
-      email
-    };
-    //배열에 값을 추가하는 두가지 방식
-    //setUsers([...users,user]); spread방식
-    setUsers(users.concat(user));//concat방식
-
-    setInputs({
-      username : '',
-      email: ''
+    dispatch({
+      type : 'CREATE_USER',
+      user : {
+        id : nextId.current,
+        username,
+        email
+      }
     });
-    nextId.current +=1;
-  },[users,username,email]);
-  
-  const onRemove = useCallback(id => {
-      // user.id가 파라미터로 일치하지 않는 원소를 추출해서 새로운 배열을 만듬
-      // = user.id가 id인 것을 제거함
-      setUsers(users => users.filter(user => user.id !== id));
-    },[]);
+    nextId.current += 1;
+  },[username,email])
 
   const onToggle = useCallback(id => {
-      setUsers( users =>
-        users.map( user =>//map함수란 반복되는 컴포넌트를 렌더링하기 위해서 
-          //자바스크립트 배열의 내장함수인 map을 활용
-          user.id === id ? { ...user, active: !user.active} : user
-          //user.id === id 가 true이면  {...user, active: !user.active}
-          //active를 반대값으로 바꾸어줌 
-        )
-      );
-    },
-    []);
+    dispatch({
+      type: 'TOGGLE_USER',
+      id
+    });
+  },[]);
 
-  const count = useMemo(()=> countActiveUsers(users),[users]);
-  
+  const onRemove = useCallback(id => {
+    dispatch({
+      type : 'REMOVE_USER',
+      id
+    })
+  },[]);
+
+  const count = useMemo(() => countActiveUsers(users),[users]);
+  //첫번째 파라미터는 어떻게 연산할지 정의하는 함수이고 , 두번째 파라미터는 deps배열이 들어간다.
+  //내용이 바뀌면 연산을하고 바뀌지않으면, 이전 연산값 deps를 사용한다.
+
   return(
     <>
-      <CreateUser
-        username={username}
-        email = {email}
-        onChange = {onChange}
-        onCreate = {onCreate}
+      <CreateUser 
+        username={username} 
+        email={email} 
+        onChange={onChange}
+        onCreate ={onCreate}
       />
-      <UserList users={users} onRemove = {onRemove} onToggle={onToggle}/>
-      <div>활성사용자수 : {count}</div>
+      <UserList users = {users} onToggle={onToggle} onRemove={onRemove}/>
+      <div>활성 사용자 수 : {count}</div>
     </>
-  );
+  )
 }
 
 export default App;

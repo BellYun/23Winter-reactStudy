@@ -40,4 +40,5 @@ function UserList({users,onRemove,onToggle}){//User 컴포넌트에서 삭제를
     );
 }
 
-export default React.memo(UserList);
+export default React.memo(UserList);//리렌더링을 방지하여 컴포넌트의 리렌더링 성능 최적화를 해줄 수 있는
+//React.memo함수이다. 리렌더링이 필요한 경우에만 위의 요소들이 리렌더링이 된다.
