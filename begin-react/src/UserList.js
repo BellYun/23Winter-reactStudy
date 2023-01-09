@@ -1,6 +1,8 @@
-import React  from "react";
+import React, { useContext }  from "react";
+import { UserDispatch } from "./App";//dispatch를 활용하기 위해서 useContext라는 Hook을 사용해야함
 
 const User = React.memo(function User({user}){//User 컴포넌트에서 삭제를 할 수 있게 
+    const dispatch = useContext(UserDispatch);
     /*useEffect(()=>{
         console.log(user);
     });*/
@@ -14,13 +16,21 @@ const User = React.memo(function User({user}){//User 컴포넌트에서 삭제�
                     cursor : 'pointer',
                     color : user.active ? 'green' : 'black'
                 }}//<b>컴포넌트에 있을떄 cursor가 'pointer'이고 user.active의 값에 따라 색도 정해진다.
-                onClick={()=> {}}
+                onClick = {() => {
+                    dispatch({type: 'TOGGLE_USER',id : user.id});
+                }}
             >
                 {user.username}
             </b>
             &nbsp;
             <span>({user.email})</span>
-            <button onClick = {() => {}} >삭제</button>
+            <button
+                onClick = {() => {
+                    dispatch ({type : 'REMOVE_USER', id: user.id});
+                }}
+            >
+                삭제
+            </button>
         </div>
     );
 });
