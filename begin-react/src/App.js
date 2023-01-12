@@ -36,7 +36,7 @@ function reducer(state, action){//새로운 상태를 만드는 로직이다.
     case 'CREATE_USER':
       return{
         users : state.users.concat(action.user)//push 
-      };//users의 값은 stata의 users의 값에 action.user을 더한것이다.
+      };
     case 'TOGGLE_USER':
       return {
         ...state,
@@ -112,7 +112,7 @@ function App(){//실행
 
   return(
     <UserDispatch.Provider value={dispatch}>
-      <CreateUser 
+      <CreateUser
         /*username = {username}
         email = {email}
         onChange = {onChange}
