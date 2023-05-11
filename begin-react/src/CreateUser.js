@@ -11,7 +11,7 @@ function CreateUser({ username, email, onChange, onCreate}){
             />
             <input
                 name='email'
-                placeholder='이메일'
+                placeholder='이메일이렇게할꺼임'
                 onChange={onChange}
                 value={email}
             />
